@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect } from "react"
 import { ChevronDown, Star, MapPin, Clock, Instagram, Scissors, Sparkles, Users, Calendar, Menu, X } from "lucide-react"
 import Image from "next/image"
 
@@ -10,9 +10,6 @@ export default function SevenBarberWebsite() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [showIntro, setShowIntro] = useState(true)
   const [logoAnimated, setLogoAnimated] = useState(false)
-  const [videoLoaded, setVideoLoaded] = useState([false, false])
-
-  const videoRefs = useRef<(HTMLVideoElement | null)[]>([null, null])
 
   useEffect(() => {
     // Animation sequence for intro
@@ -53,46 +50,6 @@ export default function SevenBarberWebsite() {
 
     return () => window.removeEventListener("scroll", handleScroll)
   }, [showIntro])
-
-  // Fonction pour gérer le chargement des vidéos
-  const handleVideoLoad = (index: number) => {
-    const newVideoLoaded = [...videoLoaded]
-    newVideoLoaded[index] = true
-    setVideoLoaded(newVideoLoaded)
-  }
-
-  // Fonction pour jouer les vidéos quand elles sont visibles
-  useEffect(() => {
-    if (showIntro) return
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          const video = entry.target as HTMLVideoElement
-          if (entry.isIntersecting) {
-            video.play().catch((e) => console.log("Erreur de lecture vidéo:", e))
-          } else {
-            video.pause()
-          }
-        })
-      },
-      { threshold: 0.5 },
-    )
-
-    videoRefs.current.forEach((video) => {
-      if (video) {
-        observer.observe(video)
-      }
-    })
-
-    return () => {
-      videoRefs.current.forEach((video) => {
-        if (video) {
-          observer.unobserve(video)
-        }
-      })
-    }
-  }, [showIntro, videoRefs])
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId)
@@ -252,25 +209,15 @@ export default function SevenBarberWebsite() {
     },
   ]
 
-  const galleryItems = [
-    { type: "image", src: "/gallery/barbe-complete.jpg", alt: "Barbe complète - Seven Barber" },
-    {
-      type: "video",
-      src: "/gallery/coupe-video-1.mp4",
-      fallback: "/gallery/barbe-complete.jpg",
-      alt: "Technique de coupe - Seven Barber",
-      index: 0,
-    },
-    { type: "image", src: "/gallery/coupe-moderne-1.jpg", alt: "Coupe moderne dégradé - Seven Barber" },
-    { type: "image", src: "/gallery/coupe-moderne-2.jpg", alt: "Coupe tendance - Seven Barber" },
-    {
-      type: "video",
-      src: "/gallery/coupe-video-2.mp4",
-      fallback: "/gallery/coupe-moderne-2.jpg",
-      alt: "Coupe professionnelle - Seven Barber",
-      index: 1,
-    },
-    { type: "image", src: "/gallery/coupe-bambino.jpg", alt: "Coupe Bambino - Seven Barber" },
+  // Images pour la galerie
+  const leftImages = [
+    { src: "/gallery/barbe-complete.jpg", alt: "Barbe complète - Seven Barber" },
+    { src: "/gallery/coupe-moderne-1.jpg", alt: "Coupe moderne dégradé - Seven Barber" },
+  ]
+
+  const rightImages = [
+    { src: "/gallery/coupe-moderne-2.jpg", alt: "Coupe tendance - Seven Barber" },
+    { src: "/gallery/coupe-bambino.jpg", alt: "Coupe Bambino - Seven Barber" },
   ]
 
   const StructuredData = () => {
@@ -546,7 +493,7 @@ export default function SevenBarberWebsite() {
         </div>
       </section>
 
-      {/* Gallery Section */}
+      {/* Gallery Section - Nouveau design avec séparateur central */}
       <section id="gallery" className="py-16 sm:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 sm:mb-16">
@@ -556,62 +503,68 @@ export default function SevenBarberWebsite() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            {galleryItems.map((item, index) => (
-              <div
-                key={index}
-                className="relative aspect-square overflow-hidden rounded-xl sm:rounded-2xl group cursor-pointer"
-              >
-                {item.type === "image" ? (
+          <div className="flex flex-col md:flex-row items-center justify-center gap-8 md:gap-0">
+            {/* Images de gauche */}
+            <div className="w-full md:w-5/12 space-y-6">
+              {leftImages.map((image, index) => (
+                <div
+                  key={`left-${index}`}
+                  className="relative aspect-square overflow-hidden rounded-xl sm:rounded-2xl group cursor-pointer shadow-md"
+                >
                   <Image
-                    src={item.src || "/placeholder.svg"}
-                    alt={item.alt}
+                    src={image.src || "/placeholder.svg"}
+                    alt={image.alt}
                     fill
                     className="object-cover transition-transform duration-500 group-hover:scale-110"
                   />
-                ) : (
-                  <div className="relative w-full h-full bg-black">
-                    {/* Fallback image qui s'affiche pendant le chargement de la vidéo */}
-                    <Image
-                      src={item.fallback || "/placeholder.svg"}
-                      alt={item.alt}
-                      fill
-                      className={`object-cover transition-opacity duration-500 ${
-                        videoLoaded[item.index as number] ? "opacity-0" : "opacity-100"
-                      }`}
-                    />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300"></div>
+                </div>
+              ))}
+            </div>
 
-                    {/* Vidéo avec plusieurs sources pour meilleure compatibilité */}
-                    <video
-                      ref={(el) => (videoRefs.current[item.index as number] = el)}
-                      className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
-                        videoLoaded[item.index as number] ? "opacity-100" : "opacity-0"
-                      }`}
-                      autoPlay
-                      loop
-                      muted
-                      playsInline
-                      controls={false}
-                      onCanPlay={() => handleVideoLoad(item.index as number)}
-                      poster={item.fallback}
-                    >
-                      <source src={item.src} type="video/mp4" />
-                      Votre navigateur ne prend pas en charge les vidéos HTML5.
-                    </video>
+            {/* Séparateur central stylisé */}
+            <div className="w-full md:w-2/12 flex flex-col items-center justify-center py-6 md:py-0">
+              <div className="relative h-full flex flex-col items-center justify-center">
+                {/* Ligne verticale */}
+                <div className="hidden md:block w-px h-full bg-gradient-to-b from-transparent via-gray-300 to-transparent absolute"></div>
 
-                    {/* Overlay avec icône de lecture */}
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
-                      <div className="bg-white/20 backdrop-blur-sm rounded-full p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M8 5v14l11-7z" />
-                        </svg>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300"></div>
+                {/* Logo au centre */}
+                <div className="bg-white rounded-full p-4 shadow-md z-10 mb-6 md:mb-0">
+                  <Image
+                    src="/seven-barber-logo.png"
+                    alt="Seven Barber Logo"
+                    width={60}
+                    height={60}
+                    className="w-12 h-12"
+                  />
+                </div>
+
+                {/* Éléments décoratifs */}
+                <div className="hidden md:flex flex-col items-center space-y-24 mt-12">
+                  <Scissors className="w-6 h-6 text-gray-400 transform rotate-45" />
+                  <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
+                  <Scissors className="w-6 h-6 text-gray-400 transform -rotate-45" />
+                </div>
               </div>
-            ))}
+            </div>
+
+            {/* Images de droite */}
+            <div className="w-full md:w-5/12 space-y-6">
+              {rightImages.map((image, index) => (
+                <div
+                  key={`right-${index}`}
+                  className="relative aspect-square overflow-hidden rounded-xl sm:rounded-2xl group cursor-pointer shadow-md"
+                >
+                  <Image
+                    src={image.src || "/placeholder.svg"}
+                    alt={image.alt}
+                    fill
+                    className="object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300"></div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
