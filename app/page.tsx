@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { ChevronDown, Star, MapPin, Clock, Instagram, Scissors, Sparkles, Users, Calendar, Menu, X } from "lucide-react"
 import Image from "next/image"
 
@@ -10,6 +10,9 @@ export default function SevenBarberWebsite() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [showIntro, setShowIntro] = useState(true)
   const [logoAnimated, setLogoAnimated] = useState(false)
+  const [videoLoaded, setVideoLoaded] = useState([false, false])
+
+  const videoRefs = useRef<(HTMLVideoElement | null)[]>([null, null])
 
   useEffect(() => {
     // Animation sequence for intro
@@ -50,6 +53,46 @@ export default function SevenBarberWebsite() {
 
     return () => window.removeEventListener("scroll", handleScroll)
   }, [showIntro])
+
+  // Fonction pour gérer le chargement des vidéos
+  const handleVideoLoad = (index: number) => {
+    const newVideoLoaded = [...videoLoaded]
+    newVideoLoaded[index] = true
+    setVideoLoaded(newVideoLoaded)
+  }
+
+  // Fonction pour jouer les vidéos quand elles sont visibles
+  useEffect(() => {
+    if (showIntro) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const video = entry.target as HTMLVideoElement
+          if (entry.isIntersecting) {
+            video.play().catch((e) => console.log("Erreur de lecture vidéo:", e))
+          } else {
+            video.pause()
+          }
+        })
+      },
+      { threshold: 0.5 },
+    )
+
+    videoRefs.current.forEach((video) => {
+      if (video) {
+        observer.observe(video)
+      }
+    })
+
+    return () => {
+      videoRefs.current.forEach((video) => {
+        if (video) {
+          observer.unobserve(video)
+        }
+      })
+    }
+  }, [showIntro, videoRefs])
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId)
@@ -216,6 +259,7 @@ export default function SevenBarberWebsite() {
       src: "/gallery/coupe-video-1.mp4",
       fallback: "/gallery/barbe-complete.jpg",
       alt: "Technique de coupe - Seven Barber",
+      index: 0,
     },
     { type: "image", src: "/gallery/coupe-moderne-1.jpg", alt: "Coupe moderne dégradé - Seven Barber" },
     { type: "image", src: "/gallery/coupe-moderne-2.jpg", alt: "Coupe tendance - Seven Barber" },
@@ -224,6 +268,7 @@ export default function SevenBarberWebsite() {
       src: "/gallery/coupe-video-2.mp4",
       fallback: "/gallery/coupe-moderne-2.jpg",
       alt: "Coupe professionnelle - Seven Barber",
+      index: 1,
     },
     { type: "image", src: "/gallery/coupe-bambino.jpg", alt: "Coupe Bambino - Seven Barber" },
   ]
@@ -525,56 +570,46 @@ export default function SevenBarberWebsite() {
                     className="object-cover transition-transform duration-500 group-hover:scale-110"
                   />
                 ) : (
-                  <div className="relative w-full h-full">
+                  <div className="relative w-full h-full bg-black">
+                    {/* Fallback image qui s'affiche pendant le chargement de la vidéo */}
+                    <Image
+                      src={item.fallback || "/placeholder.svg"}
+                      alt={item.alt}
+                      fill
+                      className={`object-cover transition-opacity duration-500 ${
+                        videoLoaded[item.index as number] ? "opacity-0" : "opacity-100"
+                      }`}
+                    />
+
+                    {/* Vidéo avec plusieurs sources pour meilleure compatibilité */}
                     <video
-                      src={item.src}
+                      ref={(el) => (videoRefs.current[item.index as number] = el)}
+                      className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
+                        videoLoaded[item.index as number] ? "opacity-100" : "opacity-0"
+                      }`}
                       autoPlay
                       loop
                       muted
                       playsInline
-                      preload="metadata"
-                      poster="/placeholder.svg?height=400&width=400"
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                      onError={(e) => {
-                        // Si la vidéo ne charge pas, afficher une image placeholder
-                        const target = e.target as HTMLVideoElement
-                        target.style.display = "none"
-                        const img = document.createElement("img")
-                        img.src = "/placeholder.svg?height=400&width=400"
-                        img.alt = item.alt
-                        img.className =
-                          "w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                        target.parentNode?.appendChild(img)
-                      }}
-                    />
-                    {/* Fallback image si la vidéo ne charge pas */}
-                    <Image
-                      src="/placeholder.svg?height=400&width=400"
-                      alt={item.alt}
-                      fill
-                      className="object-cover transition-transform duration-500 group-hover:scale-110 opacity-0"
-                      onLoad={(e) => {
-                        // Masquer l'image de fallback si la vidéo charge
-                        const video = (e.target as HTMLElement).parentNode?.querySelector("video")
-                        if (video && video.readyState >= 2) {
-                          ;(e.target as HTMLElement).style.display = "none"
-                        }
-                      }}
-                    />
-                  </div>
-                )}
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300"></div>
+                      controls={false}
+                      onCanPlay={() => handleVideoLoad(item.index as number)}
+                      poster={item.fallback}
+                    >
+                      <source src={item.src} type="video/mp4" />
+                      Votre navigateur ne prend pas en charge les vidéos HTML5.
+                    </video>
 
-                {/* Play icon overlay for videos */}
-                {item.type === "video" && (
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div className="bg-white/20 backdrop-blur-sm rounded-full p-3">
-                      <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M8 5v14l11-7z" />
-                      </svg>
+                    {/* Overlay avec icône de lecture */}
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
+                      <div className="bg-white/20 backdrop-blur-sm rounded-full p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M8 5v14l11-7z" />
+                        </svg>
+                      </div>
                     </div>
                   </div>
                 )}
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300"></div>
               </div>
             ))}
           </div>
