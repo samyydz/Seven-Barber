@@ -10,6 +10,7 @@ export default function SevenBarberWebsite() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [showIntro, setShowIntro] = useState(true)
   const [logoAnimated, setLogoAnimated] = useState(false)
+  const [activeServiceCategory, setActiveServiceCategory] = useState(0)
 
   useEffect(() => {
     // Animation sequence for intro
@@ -450,7 +451,7 @@ export default function SevenBarberWebsite() {
         </div>
       </section>
 
-      {/* Services Section */}
+      {/* Services Section - Système d'onglets */}
       <section id="services" className="py-16 sm:py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 sm:mb-16">
@@ -460,35 +461,52 @@ export default function SevenBarberWebsite() {
             </p>
           </div>
 
-          <div className="space-y-8 sm:space-y-12">
-            {serviceCategories.map((category, categoryIndex) => (
-              <div key={categoryIndex} className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-sm">
-                <h3 className="text-xl sm:text-2xl font-bold mb-2 text-center text-black">{category.title}</h3>
-                {category.subtitle && (
-                  <p className="text-gray-500 text-center mb-6 sm:mb-8 italic text-sm sm:text-base">
-                    {category.subtitle}
-                  </p>
-                )}
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                  {category.services.map((service, index) => (
-                    <div
-                      key={index}
-                      className="bg-gray-50 rounded-xl sm:rounded-2xl p-4 sm:p-6 hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 group border border-gray-100"
-                    >
-                      <div className="text-gray-600 mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300">
-                        {service.icon}
-                      </div>
-                      <h4 className="text-base sm:text-lg font-bold mb-2 leading-tight text-black">{service.name}</h4>
-                      <div className="flex justify-between items-center">
-                        <span className="text-lg sm:text-xl font-bold text-black">{service.price}</span>
-                        <span className="text-xs sm:text-sm text-gray-500">{service.duration}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+          {/* Onglets de navigation */}
+          <div className="flex flex-wrap justify-center gap-2 sm:gap-4 mb-8 sm:mb-12">
+            {serviceCategories.map((category, index) => (
+              <button
+                key={index}
+                onClick={() => setActiveServiceCategory(index)}
+                className={`px-4 sm:px-6 py-2 sm:py-3 rounded-full text-sm sm:text-base font-medium transition-all duration-300 ${
+                  activeServiceCategory === index
+                    ? "bg-black text-white shadow-lg transform scale-105"
+                    : "bg-white text-gray-600 hover:bg-gray-100 hover:text-black border border-gray-200"
+                }`}
+              >
+                {category.title}
+              </button>
             ))}
+          </div>
+
+          {/* Contenu de la catégorie active */}
+          <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-sm min-h-[400px] transition-all duration-500">
+            <h3 className="text-xl sm:text-2xl font-bold mb-2 text-center text-black">
+              {serviceCategories[activeServiceCategory].title}
+            </h3>
+            {serviceCategories[activeServiceCategory].subtitle && (
+              <p className="text-gray-500 text-center mb-6 sm:mb-8 italic text-sm sm:text-base">
+                {serviceCategories[activeServiceCategory].subtitle}
+              </p>
+            )}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+              {serviceCategories[activeServiceCategory].services.map((service, index) => (
+                <div
+                  key={index}
+                  className="bg-gray-50 rounded-xl sm:rounded-2xl p-4 sm:p-6 hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 group border border-gray-100 animate-fade-in"
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
+                  <div className="text-gray-600 mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300">
+                    {service.icon}
+                  </div>
+                  <h4 className="text-base sm:text-lg font-bold mb-2 leading-tight text-black">{service.name}</h4>
+                  <div className="flex justify-between items-center">
+                    <span className="text-lg sm:text-xl font-bold text-black">{service.price}</span>
+                    <span className="text-xs sm:text-sm text-gray-500">{service.duration}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
