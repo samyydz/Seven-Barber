@@ -209,13 +209,13 @@ export default function SevenBarberWebsite() {
     },
   ]
 
-  const galleryImages = [
-    "/placeholder.svg?height=400&width=400",
-    "/placeholder.svg?height=400&width=400",
-    "/placeholder.svg?height=400&width=400",
-    "/placeholder.svg?height=400&width=400",
-    "/placeholder.svg?height=400&width=400",
-    "/placeholder.svg?height=400&width=400",
+  const galleryItems = [
+    { type: "image", src: "/gallery/barbe-complete.jpg", alt: "Barbe complète - Seven Barber" },
+    { type: "video", src: "/gallery/coupe-video-1.mp4", alt: "Technique de coupe - Seven Barber" },
+    { type: "image", src: "/gallery/coupe-moderne-1.jpg", alt: "Coupe moderne dégradé - Seven Barber" },
+    { type: "image", src: "/gallery/coupe-moderne-2.jpg", alt: "Coupe tendance - Seven Barber" },
+    { type: "video", src: "/gallery/coupe-video-2.mp4", alt: "Coupe professionnelle - Seven Barber" },
+    { type: "image", src: "/gallery/coupe-bambino.jpg", alt: "Coupe Bambino - Seven Barber" },
   ]
 
   const StructuredData = () => {
@@ -298,7 +298,7 @@ export default function SevenBarberWebsite() {
       {/* Navigation */}
       <nav
         className={`fixed top-0 w-full z-50 transition-all duration-300 ${
-          isScrolled ? "bg-white/95 backdrop-blur-md border-b border-gray-200" : "bg-transparent"
+          isScrolled ? "bg-white border-b border-gray-200" : "bg-white"
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -345,7 +345,7 @@ export default function SevenBarberWebsite() {
             isMobileMenuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0 overflow-hidden"
           }`}
         >
-          <div className="bg-white/95 backdrop-blur-md border-t border-gray-200">
+          <div className="bg-white border-t border-gray-200">
             <div className="px-4 py-4 space-y-3">
               {navigationItems.map((item) => (
                 <button
@@ -374,14 +374,8 @@ export default function SevenBarberWebsite() {
       {/* Hero Section */}
       <section id="home" className="relative h-screen flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 z-0">
-          <Image
-            src="/placeholder.svg?height=1080&width=1920"
-            alt="Seven Barber Salon"
-            fill
-            className="object-cover"
-            priority
-          />
-          <div className="absolute inset-0 bg-black/60"></div>
+          <Image src="/salon-interior.png" alt="Seven Barber Salon Interior" fill className="object-cover" priority />
+          <div className="absolute inset-0 bg-black/30"></div>
         </div>
 
         <div className="relative z-10 text-center max-w-4xl mx-auto px-4 sm:px-6 animate-fade-in">
@@ -391,7 +385,7 @@ export default function SevenBarberWebsite() {
               alt="Seven Barber Logo"
               width={200}
               height={200}
-              className="w-32 h-32 sm:w-40 sm:h-40 mb-4"
+              className="w-32 h-32 sm:w-40 sm:h-40 mb-4 filter invert"
             />
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white">Seven Barber</h1>
           </div>
@@ -508,18 +502,40 @@ export default function SevenBarberWebsite() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            {galleryImages.map((image, index) => (
+            {galleryItems.map((item, index) => (
               <div
                 key={index}
                 className="relative aspect-square overflow-hidden rounded-xl sm:rounded-2xl group cursor-pointer"
               >
-                <Image
-                  src={image || "/placeholder.svg"}
-                  alt={`Galerie Seven Barber ${index + 1}`}
-                  fill
-                  className="object-cover transition-transform duration-500 group-hover:scale-110"
-                />
+                {item.type === "image" ? (
+                  <Image
+                    src={item.src || "/placeholder.svg"}
+                    alt={item.alt}
+                    fill
+                    className="object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                ) : (
+                  <video
+                    src={item.src}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                )}
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300"></div>
+
+                {/* Play icon overlay for videos */}
+                {item.type === "video" && (
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div className="bg-white/20 backdrop-blur-sm rounded-full p-3">
+                      <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z" />
+                      </svg>
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -660,7 +676,7 @@ export default function SevenBarberWebsite() {
                 alt="Seven Barber Logo"
                 width={60}
                 height={60}
-                className="w-12 h-12 mb-2"
+                className="w-12 h-12 mb-2 filter invert"
               />
               <div className="text-2xl sm:text-3xl font-bold text-white">Seven Barber</div>
             </div>
