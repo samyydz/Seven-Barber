@@ -211,10 +211,20 @@ export default function SevenBarberWebsite() {
 
   const galleryItems = [
     { type: "image", src: "/gallery/barbe-complete.jpg", alt: "Barbe complète - Seven Barber" },
-    { type: "video", src: "/gallery/coupe-video-1.mp4", alt: "Technique de coupe - Seven Barber" },
+    {
+      type: "video",
+      src: "/gallery/coupe-video-1.mp4",
+      fallback: "/gallery/barbe-complete.jpg",
+      alt: "Technique de coupe - Seven Barber",
+    },
     { type: "image", src: "/gallery/coupe-moderne-1.jpg", alt: "Coupe moderne dégradé - Seven Barber" },
     { type: "image", src: "/gallery/coupe-moderne-2.jpg", alt: "Coupe tendance - Seven Barber" },
-    { type: "video", src: "/gallery/coupe-video-2.mp4", alt: "Coupe professionnelle - Seven Barber" },
+    {
+      type: "video",
+      src: "/gallery/coupe-video-2.mp4",
+      fallback: "/gallery/coupe-moderne-2.jpg",
+      alt: "Coupe professionnelle - Seven Barber",
+    },
     { type: "image", src: "/gallery/coupe-bambino.jpg", alt: "Coupe Bambino - Seven Barber" },
   ]
 
@@ -515,14 +525,43 @@ export default function SevenBarberWebsite() {
                     className="object-cover transition-transform duration-500 group-hover:scale-110"
                   />
                 ) : (
-                  <video
-                    src={item.src}
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
+                  <div className="relative w-full h-full">
+                    <video
+                      src={item.src}
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      preload="metadata"
+                      poster="/placeholder.svg?height=400&width=400"
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                      onError={(e) => {
+                        // Si la vidéo ne charge pas, afficher une image placeholder
+                        const target = e.target as HTMLVideoElement
+                        target.style.display = "none"
+                        const img = document.createElement("img")
+                        img.src = "/placeholder.svg?height=400&width=400"
+                        img.alt = item.alt
+                        img.className =
+                          "w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        target.parentNode?.appendChild(img)
+                      }}
+                    />
+                    {/* Fallback image si la vidéo ne charge pas */}
+                    <Image
+                      src="/placeholder.svg?height=400&width=400"
+                      alt={item.alt}
+                      fill
+                      className="object-cover transition-transform duration-500 group-hover:scale-110 opacity-0"
+                      onLoad={(e) => {
+                        // Masquer l'image de fallback si la vidéo charge
+                        const video = (e.target as HTMLElement).parentNode?.querySelector("video")
+                        if (video && video.readyState >= 2) {
+                          ;(e.target as HTMLElement).style.display = "none"
+                        }
+                      }}
+                    />
+                  </div>
                 )}
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300"></div>
 
